@@ -1,4 +1,15 @@
 services:
+  api:
+    build: .
+    depends_on:
+      - postgres
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/reservas
+      DB_USER: reservas
+      DB_PASSWORD: reservas_dev_password
+    ports:
+      - "8080:8080"
+
   postgres:
     image: postgres:16
     environment:
