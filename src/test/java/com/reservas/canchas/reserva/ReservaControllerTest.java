@@ -2,7 +2,10 @@ package com.reservas.canchas.reserva;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
@@ -86,5 +89,26 @@ class ReservaControllerTest {
 
 		mockMvc.perform(post("/reservas/5/cancelar"))
 				.andExpect(status().isOk());
+	}
+
+	@Test
+	void faltaCanchaIdResponde400() throws Exception {
+		mockMvc.perform(get("/reservas"))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void metodoNoPermitidoResponde405() throws Exception {
+		mockMvc.perform(put("/reservas"))
+				.andExpect(status().isMethodNotAllowed());
+	}
+
+	@Test
+	void errorInesperadoResponde500ConMensajeGenerico() throws Exception {
+		when(service.listarPorCancha(1L)).thenThrow(new IllegalStateException("detalle interno"));
+
+		mockMvc.perform(get("/reservas").param("canchaId", "1"))
+				.andExpect(status().isInternalServerError())
+				.andExpect(jsonPath("$.detail").value("Ocurrió un error inesperado"));
 	}
 }
